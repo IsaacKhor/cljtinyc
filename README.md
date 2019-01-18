@@ -1,6 +1,8 @@
-# cs230-c-compiler
+# Compiler for a subset of C99
 
-FIXME: description
+This is written for my CS230 Compilers class. I'm strictly speaking _not_
+supposed to be writing this in Clojure, but I don't really care. I'm mainly
+tageting a subset of C99 for now.
 
 ## Installation
 
