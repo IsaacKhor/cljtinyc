@@ -36,7 +36,7 @@
             {:token {:type tok-type
                      :text match-text
                      :line linenum
-                     :char cur-char}
+                     :char cur-char} 
              :next-lex-state {:linenum next-linenum
                               :linestr rest-line
                               :charnum next-char}})
@@ -65,7 +65,7 @@
                                          [(:linestr new-state) rest-lines])
          [new-linenum new-charnum] (if line-exhausted?
                                     [(inc linenum) 1]
-                                    [linenum charnum])]
+                                    [linenum (:charnum new-state)])]
          ; This line is empty and there's no next line (at EOF)
      (if (and line-exhausted? (empty? new-rest-lines))
        new-tokens
