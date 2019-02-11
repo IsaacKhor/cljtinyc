@@ -19,7 +19,7 @@
                  :linenum linenum
                  :char cur-char
                  :stage ::lexer
-                 :msg (str "Failed to parse token :" trimmed-line)})) 
+                 :msg (str "Failed to parse token: " trimmed-line)})) 
       (let [[tok-type tok-pat] (first patterns)
             match (re-find tok-pat trimmed-line)]
         (if match
