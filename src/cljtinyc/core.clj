@@ -1,15 +1,13 @@
 (ns cljtinyc.core
-  (:require [instaparse.core :as ip]
-            [clojure.pprint :refer [pprint]]
+  (:require [clojure.pprint :refer [pprint]]
             [cljtinyc.lex-spec :as lex])
   (:gen-class))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (let [[grammar-path source-path] args
-        grammar (slurp grammar-path)
+  (let [[source-path] args
         source (slurp source-path)
-        parser (ip/parser grammar :auto-whitespace :standard)]
-    (println "Parsing the input...")
-    (pprint (parser source))))
+        tokens (lex/c-lexer source)]
+    (println "Scanning the input...")
+    (pprint tokens)))
