@@ -47,8 +47,11 @@
   (let [; Trim because trailing whitespace will mess with lexer and it
         ; doesn't matter in C anyways
         first-line (first lines)
-        trimmed (if (nil? first-line) "" (str/trimr first-line))]
-    [trimmed (rest lines)]))
+        rest-lines (rest lines)]
+    (if (str/blank? first-line)
+      ; If current line is blank, skip to next line
+      (recur rest-lines)
+      [(str/trimr first-line) rest-lines])))
 
 (defn- lex
   ([patterns lines] 
