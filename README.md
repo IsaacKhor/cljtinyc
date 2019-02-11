@@ -12,7 +12,7 @@ Download from http://example.com/FIXME.
 
 FIXME: explanation
 
-    $ java -jar cs230-c-compiler-0.1.0-standalone.jar [args]
+    $ java -jar cljtinyc-0.1.0-standalone.jar [args]
 
 ## Options
 

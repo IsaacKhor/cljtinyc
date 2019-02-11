@@ -1,3 +1,3 @@
-# Introduction to cs230-c-compiler
+# Introduction to cljtinyc
 
 TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)

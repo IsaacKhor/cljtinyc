@@ -1,9 +1,8 @@
-(ns cs230-c-compiler.core
+(ns cljtinyc.core
   (:require [instaparse.core :as ip]
-            [clojure.pprint :refer [pprint]])
+            [clojure.pprint :refer [pprint]]
+            [cljtinyc.lexer :as lex])
   (:gen-class))
-
-;(def parser (ip/parser (slurp "src/cs230_c_compiler/grammar.ebnf")))
 
 (defn -main
   "I don't do a whole lot ... yet."

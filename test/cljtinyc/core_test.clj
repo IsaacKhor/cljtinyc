@@ -1,6 +1,6 @@
-(ns cs230-c-compiler.core-test
+(ns cljtinyc.core-test
   (:require [clojure.test :refer :all]
-            [cs230-c-compiler.core :refer :all]))
+            [cljtinyc.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
