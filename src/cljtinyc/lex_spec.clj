@@ -10,9 +10,10 @@
    "union" "unsigned" "void" "volatile" "while"])
 
 (def keyword-patterns 
-  (map #([(keyword (str "kw_" %1))
-          (re-pattern (str "^" %1))])
-       c-keywords))
+  (mapv 
+    (fn [kw] [(keyword (str "kw_" kw))
+              (re-pattern (str "^" kw))])
+    c-keywords))
 
 (def identifier-pattern [:identifier #"^[a-zA-Z_][a-zA-Z0-9_]*"])
 
@@ -76,10 +77,12 @@
    [:char_literal #"^'(\\([ntvbrfa\\?'\"]|[0-7][0-7][0-7]|[0-9A-Fa-f][0-9A-Fa-f])|[^\\'])'"]
    [:string_literal #"^\"(\.|[^\"])*\""]])
 
-(def c-lex-grammar
+(def lex-grammar
   (concat keyword-patterns 
-          identifier-pattern 
+          [identifier-pattern] 
           ; Must be before punctuation to scan ".3" correctly
           literal-patterns
           operator-patterns 
           punctuation-patterns)) 
+
+(def c-lexer (lex/make-lexer lex-grammar))

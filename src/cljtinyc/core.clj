@@ -1,7 +1,7 @@
 (ns cljtinyc.core
   (:require [instaparse.core :as ip]
             [clojure.pprint :refer [pprint]]
-            [cljtinyc.lexer :as lex])
+            [cljtinyc.lex-spec :as lex])
   (:gen-class))
 
 (defn -main
