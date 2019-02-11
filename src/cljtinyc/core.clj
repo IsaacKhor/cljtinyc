@@ -7,7 +7,6 @@
   "I don't do a whole lot ... yet."
   [& args]
   (let [[source-path] args
-        source (slurp source-path)
-        tokens (lex/c-lexer source)]
+        source (slurp source-path)]
     (println "Scanning the input...")
-    (pprint tokens)))
+    (pprint (lex/c-lexer source))))
