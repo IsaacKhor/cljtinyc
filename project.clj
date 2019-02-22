@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [instaparse "1.4.9"]
                  [slingshot "0.12.2"]
+                 [org.clojure/tools.cli "0.4.1"]
                  [dk.brics.automaton/automaton "1.11.2"]]
   :main ^:skip-aot cljtinyc.core
   :target-path "target/%s"
