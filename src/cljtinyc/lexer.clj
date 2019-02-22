@@ -44,13 +44,13 @@
           (recur (rest patterns)))))))
 
 (defn- get-next-line [lines]
-  (let [; Trim because trailing whitespace will mess with lexer and it
-        ; doesn't matter in C anyways
-        first-line (first lines)
+  (let [first-line (first lines)
         rest-lines (rest lines)]
     (if (str/blank? first-line)
       ; If current line is blank, skip to next line
       (recur rest-lines)
+      ; Trim because trailing whitespace will mess with lexer and it
+      ; doesn't matter in C anyways
       [(str/trimr first-line) rest-lines])))
 
 (defn- lex
@@ -72,7 +72,8 @@
          ; This line is empty and there's no next line (at EOF)
      (if (and line-exhausted? (empty? new-rest-lines))
        new-tokens
-       (recur patterns new-tokens new-cur-line new-rest-lines new-linenum new-charnum)))))
+       (recur patterns new-tokens new-cur-line new-rest-lines 
+              new-linenum new-charnum)))))
     
 (defn make-lexer [patterns]
   "Creates a [string] -> [token] lexer from patterns"
