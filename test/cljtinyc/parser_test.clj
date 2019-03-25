@@ -26,7 +26,17 @@
    :epsilon      #{:epsilon},
    :Tp           #{:star :epsilon}})
 
-(deftest first-set-test
+(def grammar-follow
+  {:E  #{:end-of-file :rparen}
+   :Ep #{:end-of-file :rparen}
+   :T  #{:end-of-file :rparen :plus}
+   :Tp #{:end-of-file :rparen :plus}
+   :F  #{:end-of-file :rparen :plus :star}})
+
+(deftest first-follow-test
   (testing "First set calculation"
     (is (= (llp/calculate-first-sets test-grammar)
-           grammar-first))))
+           grammar-first)))
+  (testing "Follow set calculation"
+    (is (= (llp/calculate-follow-sets test-grammar grammar-first)
+           grammar-follow))))
