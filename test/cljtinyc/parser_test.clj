@@ -26,10 +26,7 @@
    :epsilon      #{:epsilon},
    :Tp           #{:star :epsilon}})
 
-(def grammar-terminals 
-  #{:id :plus :star :lparen :rparen :end-of-file :epsilon})
-
 (deftest first-set-test
   (testing "First set calculation"
-    (is (= (llp/calculate-first-sets test-grammar grammar-terminals)
+    (is (= (llp/calculate-first-sets test-grammar)
            grammar-first))))

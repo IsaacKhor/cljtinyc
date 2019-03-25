@@ -46,6 +46,7 @@
   [grammar first-sets]
   (loop [fsets first-sets]
     (let [new-fsets (process-productions grammar fsets)]
+      ; Keep going through the algorithm until we reach a fixed point
       (if (= new-fsets fsets)
         new-fsets
         (recur new-fsets)))))
@@ -57,9 +58,12 @@
                          {} non-terminals)
         t-fsets (reduce (fn [map term] (assoc map term #{term}))
                         {} terminals)]
-    (println "Terminals: " terminals)
-    (println "Non-Terminals: " non-terminals)
+    ; (println "Terminals: " terminals)
+    ; (println "Non-Terminals: " non-terminals)
     (merge nt-fsets t-fsets)))
+
+(defn ^:private get-all-symbols [grammar])
+  (set (flatten grammar))
 
 (defn calculate-first-sets
   "Calculates the FIRST sets for each non-terminal in the grammar.
@@ -68,10 +72,12 @@
    listed as seperate productions.
 
    Any symbol on the left hand side of a production is assumed to be a
-   non-terminal. Remember to include :epsilon and :end-of-file in the
-   set of terminals."
-  [grammar terminals]
-  (let [non-terminals (set (map first grammar))
+   non-terminal, and those not on the right are assumed to be a terminal."
+  [grammar]
+  (let [all-symbols (get-all-symbols grammar)
+        non-terminals (set (map first grammar))
+        terminals (s/difference all-symbols non-terminals)
+        modified-terminals (into terminals #{:epsilon :end-of-file})
         fsets (setup-first-sets terminals non-terminals)]
     (get-first-sets grammar fsets)))
 
