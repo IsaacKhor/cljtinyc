@@ -1,7 +1,8 @@
 (ns cljtinyc.core
   (:require [clojure.pprint :refer [pprint]]
             [cljtinyc.lex-spec :as lex]
-            [clojure.tools.cli :as cli])
+            [clojure.tools.cli :as cli]
+            [cljtinyc.llparser :as llp])
   (:gen-class))
 
 (def cli-options
@@ -24,7 +25,6 @@ Options:\n"
     (pprint (lex/c-lexer source))))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
   (let [parsed (cli/parse-opts args cli-options)
         {:keys [options arguments summary errors]} parsed]
@@ -32,7 +32,7 @@ Options:\n"
       (println (generate-summary summary))
       (System/exit 0))
     (if errors
-      (println errors)
+      (println "Arguments invalid. Use -h --help for help." errors)
       (System/exit 1))
     (let [[source-path] arguments]
       (scan-source source-path))))
