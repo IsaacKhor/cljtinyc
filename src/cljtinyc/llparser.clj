@@ -79,13 +79,3 @@
   "Calculates the FOLLOW sets for each non-terminal in the grammar. The 
    grammar should be specified the same as for `calculate-first-set`"
   [grammar])
-
-(def production-list
-  [[:E  :T :Ep]
-   [:Ep :plus :T :Ep]
-   [:Ep :epsilon]
-   [:T  :F :Tp]
-   [:Tp :star :F :Tp]
-   [:Tp :epsilon]
-   [:F  :lparen :E :rparen]
-   [:F  :id]])
