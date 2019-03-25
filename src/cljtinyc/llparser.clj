@@ -3,6 +3,9 @@
   (:require [clojure.set :as s]
             [clojure.pprint :as pp]))
 
+(defn ^:private remove-epsilon [s]
+  (s/difference s #{:epsilon}))
+
 (defn ^:private get-first-for-beta [beta fsets]
   (if (empty? beta)
     ; If there are no more elements in beta, then every element of beta might
@@ -18,11 +21,11 @@
       ; FIRST(b2), and unless beta2 also derives epsilon, FIRST(A) does NOT
       ; contain epsilon. 
       (if (contains? b1-fset :epsilon)
-        (s/union (s/difference b1-fset #{:epsilon})
+        (s/union (remove-epsilon b1-fset)
                  (get-first-for-beta (rest beta) fsets))
         b1-fset))))
 
-(defn ^:private process-productions [productions first-sets]
+(defn ^:private first-contrib-of-productions [productions first-sets]
   (loop [prods productions
          fsets first-sets]
     (if (empty? prods)
@@ -44,12 +47,11 @@
 
 (defn ^:private get-first-sets 
   [grammar first-sets]
-  (loop [fsets first-sets]
-    (let [new-fsets (process-productions grammar fsets)]
-      ; Keep going through the algorithm until we reach a fixed point
-      (if (= new-fsets fsets)
-        new-fsets
-        (recur new-fsets)))))
+  (let [new-fsets (first-contrib-of-productions grammar first-sets)]
+    ; Keep going through the algorithm until we reach a fixed point
+    (if (= new-fsets first-sets)
+      new-fsets
+      (recur grammar new-fsets))))
 
 (defn ^:private setup-first-sets [terminals non-terminals]
   ; The initial fsets for nonterminals are empty and only the terminal
@@ -62,14 +64,16 @@
     ; (println "Non-Terminals: " non-terminals)
     (merge nt-fsets t-fsets)))
 
-(defn ^:private get-all-symbols [grammar])
-  (set (flatten grammar))
+(defn ^:private get-all-symbols [grammar]
+  (set (flatten grammar)))
 
 (defn calculate-first-sets
   "Calculates the FIRST sets for each non-terminal in the grammar.
    Grammar should be specified as a list of productions of the form 
    A -> B1 B2 B3 with no alternations. Alternations should be 
    listed as seperate productions.
+
+   For example: instead of A -> B | C, use A -> B; A -> C
 
    Any symbol on the left hand side of a production is assumed to be a
    non-terminal, and those not on the right are assumed to be a terminal."
@@ -78,10 +82,5 @@
         non-terminals (set (map first grammar))
         terminals (s/difference all-symbols non-terminals)
         modified-terminals (into terminals #{:epsilon :end-of-file})
-        fsets (setup-first-sets terminals non-terminals)]
+        fsets (setup-first-sets modified-terminals non-terminals)]
     (get-first-sets grammar fsets)))
-
-(defn calculate-follow-set
-  "Calculates the FOLLOW sets for each non-terminal in the grammar. The 
-   grammar should be specified the same as for `calculate-first-set`"
-  [grammar])
