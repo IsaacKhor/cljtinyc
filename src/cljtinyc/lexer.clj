@@ -3,6 +3,8 @@
             [slingshot.slingshot :refer [throw+]]))
   ; (:import (dk.brics.automaton RegExp Automaton RunAutomaton State)))
 
+(defrecord Token [type text line char])
+
 (defn- get-next-token [patmap linestr linenum prevcharnum]
   "Given patterns and lexer state, get next token. Patterns must begin
    with '^' to match start of line."
@@ -33,10 +35,8 @@
                 next-linenum (if (empty? rest-line)
                                (inc linenum)
                                linenum)]
-            {:token {:type tok-type
-                     :text match-text
-                     :line linenum
-                     :char cur-char} 
+            (println "Just scanned token" tok-type match-text)
+            {:token (Token. tok-type match-text linenum cur-char)
              :next-lex-state {:linenum next-linenum
                               :linestr rest-line
                               :charnum next-char}})
