@@ -2,7 +2,7 @@
   (:require [clojure.pprint :refer [pprint]]
             [cljtinyc.lex-spec :as lex]
             [clojure.tools.cli :as cli]
-            [cljtinyc.llparser :as llp])
+            [cljtinyc.parse-spec :as parse])
   (:gen-class))
 
 (def cli-options
@@ -19,20 +19,32 @@ Usage: cljtinyc [-lpah] source_path
 Options:\n"
      options-summary))
     
-(defn scan-source [source-path]
-  (println "Scanning source from: " source-path)
-  (let [source (slurp source-path)]
-    (pprint (lex/c-lexer source))))
+(defn scan-source [options source-path]
+  (println "Scanning source from:" source-path)
+  (let [source (slurp source-path)
+        tokens (lex/c-lexer source)]
+    (pprint tokens)
+    tokens))
+
+(defn parse-tree [options tokens]
+  (println "Getting the parse tree...")
+  (let [show (:show-parse-tree options)
+        parse-tree (parse/parse-a1 tokens)]
+    ; (pprint parse-tree)
+    (if show (pprint parse-tree))
+    parse-tree))
 
 (defn -main
   [& args]
   (let [parsed (cli/parse-opts args cli-options)
         {:keys [options arguments summary errors]} parsed]
-    (if (:help options)
-      (println (generate-summary summary))
-      (System/exit 0))
-    (if errors
-      (println "Arguments invalid. Use -h --help for help." errors)
-      (System/exit 1))
-    (let [[source-path] arguments]
-      (scan-source source-path))))
+    (when (:help options)
+      (do (println (generate-summary summary))
+          (System/exit 0)))
+    (when errors
+      (do (println "Arguments invalid. Use -h --help for help." errors)
+          (System/exit 1)))
+    (let [[source-path] arguments
+          tokens (scan-source options source-path)
+          parse-tree (parse-tree options tokens)]
+      parse-tree)))
