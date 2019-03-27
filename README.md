@@ -10,13 +10,18 @@ Download from http://example.com/FIXME.
 
 ## Usage
 
-FIXME: explanation
-
     $ java -jar cljtinyc-0.1.0-standalone.jar [args]
 
 ## Options
 
-FIXME: listing of options this app accepts.
+```
+Usage: cljtinyc [-lpah] source_path
+Options:
+  -l, --show-lex         Show the resulting lexical analysis
+  -p, --show-parse-tree  Show the resulting parse tree
+  -a, --show-ast         Show the generated AST
+  -h, --help
+```
 
 ## Examples
 
