@@ -22,8 +22,9 @@ Options:\n"
 (defn scan-source [options source-path]
   (println "Scanning source from:" source-path)
   (let [source (slurp source-path)
-        tokens (lex/c-lexer source)]
-    (pprint tokens)
+        tokens (lex/c-lexer source)
+        show (:show-lex options)]
+    (if show (pprint tokens))
     tokens))
 
 (defn parse-tree [options tokens]

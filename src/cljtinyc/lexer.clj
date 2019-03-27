@@ -35,7 +35,7 @@
                 next-linenum (if (empty? rest-line)
                                (inc linenum)
                                linenum)]
-            (println "Just scanned token" tok-type match-text)
+            ; (println "Just scanned token" tok-type match-text)
             {:token (Token. tok-type match-text linenum cur-char)
              :next-lex-state {:linenum next-linenum
                               :linestr rest-line
