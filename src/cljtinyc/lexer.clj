@@ -47,8 +47,10 @@
   (let [first-line (first lines)
         rest-lines (rest lines)]
     (if (str/blank? first-line)
-      ; If current line is blank, skip to next line
-      (recur rest-lines)
+      (if (empty? rest-lines) 
+        [nil nil]
+        ; If current line is blank, skip to next line
+        (recur rest-lines))
       ; Trim because trailing whitespace will mess with lexer and it
       ; doesn't matter in C anyways
       [(str/trimr first-line) rest-lines])))
@@ -66,16 +68,18 @@
          [new-cur-line new-rest-lines] (if line-exhausted? 
                                          (get-next-line rest-lines) 
                                          [(:linestr new-state) rest-lines])
-         [new-linenum new-charnum] (if line-exhausted?
-                                    [(inc linenum) 1]
-                                    [linenum (:charnum new-state)])]
-         ; This line is empty and there's no next line (at EOF)
-     (if (and line-exhausted? (empty? new-rest-lines))
+         new-linenum (:linenum new-state)
+         new-charnum (if line-exhausted? 1 (:charnum new-state))]
+     ; (println (:linestr new-state) new-cur-line new-rest-lines)
+     ; This line is empty and there's no next line (at EOF)
+     (if (and (empty? new-cur-line) (empty? new-rest-lines))
        new-tokens
        (recur patterns new-tokens new-cur-line new-rest-lines 
               new-linenum new-charnum)))))
+
+(def eof-token {:type :end-of-file})
     
 (defn make-lexer [patterns]
   "Creates a [string] -> [token] lexer from patterns"
   (fn lexer [string]
-    (lex patterns (str/split-lines string))))
+    (conj (lex patterns (str/split-lines string)) eof-token)))
