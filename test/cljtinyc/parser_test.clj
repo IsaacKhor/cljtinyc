@@ -13,18 +13,18 @@
    [:F  :id]])
 
 (def grammar-first
-  {:end-of-file #{:end-of-file},
+  {:E            #{:lparen :id},
+   :Ep           #{:plus :epsilon},
+   :T            #{:lparen :id},
+   :Tp           #{:star :epsilon}
    :F            #{:lparen :id},
+   :end-of-file  #{:end-of-file},
    :lparen       #{:lparen},
    :star         #{:star},
-   :T            #{:lparen :id},
    :rparen       #{:rparen},
-   :Ep           #{:plus :epsilon},
-   :E            #{:lparen :id},
    :id           #{:id},
    :plus         #{:plus},
-   :epsilon      #{:epsilon},
-   :Tp           #{:star :epsilon}})
+   :epsilon      #{:epsilon},})
 
 (def grammar-follow
   {:E  #{:end-of-file :rparen}
