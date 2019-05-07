@@ -1,0 +1,37 @@
+Program = <'void'> <'main'> <'('> <')'> Block
+Block = <'{'> Declarations Optional_statements? <'}'>
+<Optional_statements> = Statement_list
+Statement_list = Statement+
+
+(* Implementation of operator precedence *)
+Expression = E1 
+<E1> = E2 (Op1 E2)*
+E2 = E3 (Op2 E3)*
+E3 = Term (Op3 Term)*
+<Term> = Paren_expr | Variable | Number | OpUnary Term | Function_call
+<Paren_expr> = <'('> Expression <')'>
+
+Function_call = Identifier Paren_expr
+
+Declarations = Declaration*
+Declaration = Type Identifier_list <';'>
+Identifier_list = Identifier (<','> Identifier)*
+
+<Statement> = Block | If_expr | While_expr | Assign_expr | Function_call <';'>
+<Else_clause> = (<'else'> Statement)?
+
+If_expr = <'if'> Paren_expr Statement Else_clause
+While_expr = <'while'> Paren_expr Statement
+Assign_expr = Variable <Assignop> Expression <';'>
+
+<Variable> = Identifier
+<Type> = 'int' | 'bool'
+<Identifier> = #"[a-zA-Z_][a-zA-Z0-9_-]*"
+Number = #"[0-9]+"
+<Assignop> = '='
+
+(* In increasing priority *)
+<Op1> = '==' | '!=' | '<' | '<=' | '>' | '>=' | '||' | '%%' | '&&' | '%'
+<Op2> = '+' | '-'
+<Op3> = '*' | '/'
+<OpUnary> = '!'
