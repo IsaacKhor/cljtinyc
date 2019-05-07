@@ -176,15 +176,17 @@
   "Given the previous state of the parser, output the state after the stack
    is consumed"
   [{:keys [table stack tokens output errors] :as state}]
-  ; (println "Current stack:" stack)
+  (println "Current stack:" stack)
+  (pp/pprint tokens)
+  (println "")
   (if (empty? stack)
     state
     (let [focus (first stack)
           lookahead-token (first tokens)
           lookahead (:type lookahead-token)
-          ; _ (println "Focus" focus "Lookahead" lookahead)
+          _ (println "Focus" focus "Lookahead" lookahead)
           table-entry (-> table focus lookahead)
-          ; _ (println "Table entry" table-entry)
+          _ (println "Table entry" table-entry)
           new-state (table-entry state)]
       (recur new-state))))
 
@@ -195,6 +197,7 @@
           focus (first stack)
           nt (first production)
           rhs (rest production)
+          _ (println "New rhs: " rhs)
           ; Filter out epsilons because they don't (or are not supposed to)
           ; match anything
           rhs-processed (filter #(not= % :epsilon) rhs)

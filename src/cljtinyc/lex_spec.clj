@@ -4,7 +4,7 @@
   (:require [cljtinyc.lexer :as lex]))
 
 (def c-keywords
-  ["auto" "break" "case" "char" "const" "continue" "default" "double" "do"
+  ["auto" "bool" "break" "case" "char" "const" "continue" "default" "double" "do"
    "else" "enum" "extern" "float" "for" "goto" "if" "int" "long" "register"
    "return" "short" "signed" "sizeof" "static" "struct" "switch" "typedef"
    "union" "unsigned" "void" "volatile" "while"])
