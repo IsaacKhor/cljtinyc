@@ -5,7 +5,7 @@ This is written for my CS230 Compilers class.
 ## To Build:
 
 1. Clone this repo: `git clone https://github.com/IsaacKhor/cljtinyc.git`
-1. Install leiningen via homebrew: `brew install leinengen`
+1. Install leiningen via homebrew: `brew install leiningen`
 2. `lein jar` to build jar, `lein uberjar` to include all deps
 
 ## Usage
