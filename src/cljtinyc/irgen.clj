@@ -9,7 +9,7 @@
 
 (def symbol-table* (atom {}))
 (def label-number* (atom 1))
-(def max-registers 7)
+(def max-registers 16)
 (def register-tmp (ir/reg 3))
 
 (defn ^:private node-rename [node]

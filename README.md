@@ -1,12 +1,12 @@
 # Compiler for a subset of C99
 
-This is written for my CS230 Compilers class. I'm strictly speaking _not_
-supposed to be writing this in Clojure, but I don't really care. I'm mainly
-tageting a subset of C99 for now.
+This is written for my CS230 Compilers class. 
 
-## Installation
+## To Build:
 
-Download from http://example.com/FIXME.
+1. Clone this repo: `git clone https://github.com/IsaacKhor/cljtinyc.git`
+1. Install leiningen via homebrew: `brew install leinengen`
+2. `lein jar` to build jar, `lein uberjar` to include all deps
 
 ## Usage
 
@@ -15,29 +15,30 @@ Download from http://example.com/FIXME.
 ## Options
 
 ```
-Usage: cljtinyc [-lpah] source_path
+Usage: cljtinyc [-123ah] source_path
 Options:
-  -l, --show-lex         Show the resulting lexical analysis
-  -p, --show-parse-tree  Show the resulting parse tree
-  -a, --show-ast         Show the generated AST
-  -h, --help
+  -a, --show-ast  Show the generated AST
+  -1, --show-ir1  Show the first IR pass
+  -2, --show-ir2  Show the second IR pass (linear IR)
+  -3, --show-ir3  Show the third IR pass (MIPS asm)
+  -m, --show-asm  Show the output MIPS asm
+  -h, --help      Show this message
 ```
 
 ## Examples
 
-...
+`lein run resources/a5.c` to test the program that tests for primes. Outputs
+the asm to `out.a`. 
 
 ### Bugs
 
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+The algorithm generating code for when there are insufficient registers fails
+for reasons currently unknown, so make sure that any expressions that you
+are trying to generate code for don't use more than 16 registers.
 
 ## License
 
-Copyright © 2019 FIXME
+Copyright © 2019 Isaac Khor.
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
