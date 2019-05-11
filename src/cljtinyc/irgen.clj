@@ -14,6 +14,9 @@
 
 (defn ^:private node-rename [node]
   (condp = node
+
+    ; Stuff that gets processed in 2nd pass
+    :Program         :ir1/statement-list
     :Block           :ir1/block
     :Assign_expr     :ir1/assign
     :While_expr      :ir1/while-loop
@@ -25,6 +28,12 @@
     :Declaration     :ir1/declaration
     :Function_call   :ir1/syscall
     :Identifier_list :ir1/identifier-list
+
+    ; Proccess in 3rd pass
+    "%"              :ir2/op-modulo
+    "!"              :ir2/op-logical-not
+
+    ; CG instructions
     "=="             :ir/op-equals
     "!="             :ir/op-noteq
     "<="             :ir/op-lessthaneq
@@ -33,12 +42,10 @@
     ">"              :ir/op-greaterthan
     "||"             :ir/op-logical-or
     "&&"             :ir/op-logical-and
-    "%"              :ir/op-modulo
     "+"              :ir/op-addition
     "-"              :ir/op-subtraction
     "*"              :ir/op-multiplication
     "/"              :ir/op-division
-    "!"              :ir/op-negation
     node))
 
 (defn ^:private to-irnode [ast-node]
@@ -113,6 +120,8 @@
 
 ; IR generation for expressions
 
+(declare expr-codegen)
+
 (defn ecd-empty [ann-node base]
   ; No children means its a terminal node, which can be an operator
   ; or a numerical literal. Either way, we won't decide whether 
@@ -171,7 +180,7 @@
           [operator bigreg bigreg smallreg])]
     (conj merged gen-code)))
 
-(defn temp-var [num] (str "compiler-temp-" num))
+(defn temp-var [num] (str "compiler_temp_" num))
 
 (defn ecd-exceed-register [ann-node base]
   (let [[opnode lnode rnode] (get-children ann-node)
@@ -188,25 +197,21 @@
         ; Process smaller node
         smallnum (min rnum lnum)
         smallbase (if (> smallnum max-registers) 1 (- max-registers smallnum))
-        smallcode (expr-codegen smallnode smallbase)
 
         ; Tmp variable load/store
         ; Add tmp variable to symbol table
-        _ (swap! symbol-table* assoc tmp-var (process-type "int"))
         tmp-var (temp-var bignum)
-        sto-inst (ir/store tmp-var bigreg) 
-        reg-r-1 (ir/reg (- max-registers 1))
-        load-inst (ir/load reg-r-1 tmp-var)
-        op-ir
-        (if (>= rnum lnum)
+        _ (swap! symbol-table* assoc tmp-var (process-type "int"))
+        reg-r-1 (ir/reg (- max-registers 1))]
+    `[~@bigcode
+      (ir/store tmp-var bigreg) ; Store to memory temporarily
+      ; Code for the node with lower ernumber
+      ~@(expr-codegen smallnode smallbase)
+      (ir/load reg-r-1 tmp-var)
+      (if (>= rnum lnum)
           ; LIR for bigger = OP smaller bigger, if right is bigger
           [operator bigreg bigreg reg-r-1]
-          [operator bigreg reg-r-1 bigreg])]
-    (-> bigcode
-        (conj sto-inst)
-        (into smallcode)
-        (conj load-inst)
-        (conj op-ir))))
+          [operator bigreg reg-r-1 bigreg])]))
 
 (defn expr-codegen [ann-node base]
   (let [c (get-children ann-node)
@@ -251,16 +256,13 @@
         gen-code (ir/store identifier result-reg)]
     (conj lin-ir gen-code)))
 
-(defn if-label-alt [num] (ir/label (str "if-alt-" num)))
-(defn if-label-end [num] (ir/label (str "if-end-" num)))
-
 (defmethod genir :ir1/if-statement [node]
   (let [[expr left] (get-children node) 
         expr-ir (genir expr)
         expr-result (get-result-register expr-ir)
         label-num (swap! label-number* inc)
-        label-alt (if-label-alt label-num)
-        label-end (if-label-end label-num)
+        label-alt (ir/label-with-num "if_alt" label-num)
+        label-end (ir/label-with-num "if_end" label-num)
         left-ir (genir left)]
     (if (= 2 (count (get-children node)))
       ; Has no else branch. We want something like:
@@ -268,10 +270,10 @@
       ;  if not expr-result goto end
       ;  left-ir...
       ;  [label end]]
-      (-> expr-ir
-          (conj (ir/branch-neq0 expr-result label-end))
-          (into left-ir)
-          (conj label-end))
+      `[~@expr-ir
+        ~(ir/branch-eq0 expr-result label-end)
+        ~@left-ir
+        ~label-end]
       ; Else branch is present, we want IR like this:
       ; [expression-ir...
       ;  if not expr-result goto alt
@@ -280,46 +282,45 @@
       ;  alt:
       ;  right-ir
       ;  end:]
-      (-> expr-ir
-          (conj (ir/branch-neq0 expr-result label-alt))
-          (into left-ir)
-          (conj (ir/jump label-end))
-          (conj label-alt)
-          (into (genir (nth (get-children node) 2)))
-          (conj label-end)))))
-
-(defn while-label-start [num] (ir/label (str "while-start-" num)))
-(defn while-label-end   [num] (ir/label (str "while-end-" num)))
+      `[~@expr-ir
+        ~(ir/branch-eq0 expr-result label-alt)
+        ~@left-ir
+        ~(ir/jump label-end)
+        ~label-alt
+        ~@(genir (nth (get-children node) 2))
+        ~label-end])))
 
 (defmethod genir :ir1/while-loop [node]
   (let [[expr block] (get-children node)
         expr-ir (genir expr)
         expr-result (get-result-register expr-ir)
         lnum (swap! label-number* inc)
-        lstart (while-label-start lnum)
-        lend (while-label-end lnum)]
-    (-> [lstart]
-        (into expr-ir)
-        (conj (ir/branch-neq0 expr-result lend))
-        (into (genir block))
-        (conj (ir/jump lstart))
-        (conj lend))))
+        lstart (ir/label-with-num "while_start" lnum)
+        lend (ir/label-with-num "while_end" lnum)]
+    `[~lstart
+      ~@expr-ir
+      ~(ir/branch-eq0 expr-result lend)
+      ~@(genir block)
+      ~(ir/jump lstart)
+      ~lend]))
 
 (defmethod genir :ir1/block [node]
   (let [[declarations code] (get-children node)
         sm (decl-list-to-symtable @symbol-table* (get-children declarations))
+        ; Add declarations to the symbol table
         _ (swap! symbol-table* merge sm)]
     (genir code)))
 
 (defmethod genir :ir1/syscall [node]
-  (let [; Assume its always a printf for a number
+  (let [; Assume its always a printf for a number for the sake of simplicity
         [_ expr] (get-children node)
         expr-ir (genir expr)
-        expr-res (get-result-register expr-ir)
-        gen-code [(ir/regmv (ir/regarg 0) expr-res)
-                  (ir/load (ir/regval 0) 1)
-                  (ir/syscall)]]
-    (into expr-ir gen-code)))
+        expr-res (get-result-register expr-ir)]
+    (into expr-ir 
+          [(ir/regmv (ir/regarg 0) expr-res)
+           ; 1 for printing an int
+           (ir/load (ir/regval 0) 1)
+           (ir/syscall)])))
 
 (defmethod genir :default [node]
   [(ir/load register-tmp (get-node-val node))])
@@ -327,4 +328,49 @@
 (defn ir-pass2
   "Second IR pass: generate low-level linear IR"
   [ir1]
-  (genir ir1))
+  ; Add main label and exit syscall
+  `[~(ir/label "main")
+    ~@(genir ir1)
+    ~(ir/load (ir/regval 0) 10)
+    ~(ir/syscall)])
+
+;;; =======================
+;;; ===== 3nd IR Pass =====
+;;; =======================
+
+(defmulti rewrite-inst first)
+
+(defmethod rewrite-inst :ir2/load [[_ to from]]
+  (if (string? from)
+    ; Loading from a register v from a value embedded in source
+    [[:ir/load to from]]
+    [[:ir/load-immediate to from]]))
+
+(defmethod rewrite-inst :ir2/op-modulo [[_ store rega regb]]
+  ; On division, quotient is written to LO and remainder to HI
+  [[:ir/op-division rega regb]
+   ; Insert no-ops due to potential pipeline hazards
+   [:ir/nop]
+   [:ir/nop]
+   [:ir/move-from-hi store]])
+
+(defmethod rewrite-inst :ir2/op-logical-not [[_ reg]]
+  (let [lnum (swap! label-number* inc)
+        ltrue (ir/label-with-num "lnot" lnum)
+        lend (ir/label-with-num "lnot_end" lnum)]
+    ; Implement truth table manually because we don't want
+    ; the bitwise negation
+    [[:ir/branch-eq reg ir/regzero ltrue]
+     [:ir/load-immediate reg 0]
+     (ir/jump lend)
+     ltrue
+     [:ir/load-immediate reg 1]
+     lend]))
+
+(defmethod rewrite-inst :default [instruction]
+  [instruction])
+
+(defn ir-pass3
+  "Third IR pass: rewrite instructions to match MIPS instruction set"
+  [ir2]
+  (vec (mapcat rewrite-inst ir2)))

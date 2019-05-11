@@ -39,10 +39,13 @@
     
 ; For REPL use
 
-(def code (slurp "resources/asgn5.c"))
-
 (defn test-grammar [source]
-  (let [parser (parser-from-file "resources/a3.ebnf")
+  (let [parser (parser-from-file "resources/grammar.ebnf")
         tree (parser source)]
     ; (pprint tree)
     (second tree)))
+
+(def code (slurp "resources/a5.c"))
+(def cst (test-grammar code))
+(def ast (cst-to-ast cst))
+
